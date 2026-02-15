@@ -2,61 +2,77 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>CÁSSIA OFFICE V8 | SUPREMACIA DIGITAL</title>
-    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce/dist/index.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce/dist/jspreadsheet.min.css" type="text/css" />
+    <title>CÁSSIA V8 | SUPREMACIA DIGITAL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
     <style>
-        :root { --gold: #D4AF37; --bg: #0A0A0A; --card: #161616; }
-        body { background: var(--bg); color: #FFF; font-family: 'Montserrat', sans-serif; margin: 0; display: flex; }
-        
-        #sidebar { width: 300px; height: 100vh; background: #000; border-right: 1px solid var(--gold); padding: 20px; box-sizing: border-box; }
-        #main { flex-grow: 1; padding: 30px; overflow-y: auto; }
-
-        .doc-card { background: var(--card); border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .doc-card:hover { border-color: var(--gold); transform: translateX(5px); }
-
-        .flashcard { width: 300px; height: 180px; background: linear-gradient(145deg, #1e1e1e, #111); border: 2px solid var(--gold); border-radius: 15px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; margin: 10px; float: left; }
-
-        .btn-gold { width: 100%; background: var(--gold); border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+        :root { --gold: #D4AF37; --dark-gray: #121212; --panel: #1E1E1E; }
+        body { background: var(--dark-gray); color: #e0e0e0; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .sidebar { width: 300px; height: 100vh; background: #000; border-right: 1px solid var(--gold); padding: 20px; position: fixed; overflow-y: auto; }
+        .main-stage { margin-left: 300px; height: 100vh; padding: 40px; }
+        .v8-card { background: var(--panel); border: 1px solid #333; border-radius: 12px; padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); height: 80vh; display: flex; flex-direction: column; }
+        .nav-link-v8 { color: #888; cursor: pointer; padding: 10px; border-radius: 5px; transition: 0.3s; margin-bottom: 5px; display: block; text-decoration: none; border-left: 3px solid transparent; }
+        .nav-link-v8:hover { background: #252525; color: var(--gold); border-left: 3px solid var(--gold); }
+        .active-v8 { color: var(--gold); background: #252525; border-left: 3px solid var(--gold); }
+        #editor-v8 { background: white; color: black; flex-grow: 1; border-radius: 8px; padding: 20px; outline: none; overflow-y: auto; }
+        .btn-save { background: var(--gold); color: black; font-weight: bold; border: none; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <h2 style="color: var(--gold)">MEUS ARQUIVOS</h2>
+<div class="sidebar">
+    <h3 class="text-center mb-4" style="color:var(--gold); font-weight:800;">CÁSSIA V8 PRO</h3>
+    <small class="text-muted">MEU PAINEL (SALVO)</small>
     <div id="file-list">
-        <div class="doc-card" onclick="loadDoc(1)">📄 Contrato Social - V8</div>
-        <div class="doc-card" onclick="loadDoc(2)">📊 Planejamento 2026</div>
+        <a class="nav-link-v8 active-v8" onclick="switchMode('text')">📄 Novo Documento de Texto</a>
     </div>
-    <hr style="border: 0.5px solid #222; margin: 20px 0;">
-    <h2 style="color: var(--gold)">MEMORIZAÇÃO</h2>
-    <button class="btn-gold" onclick="showFlashcards()">ESTUDAR CARDS</button>
+    <hr style="border-color: #333;">
+    <small class="text-muted">20 TEMPLATES DE PLANILHAS</small>
+    <div id="sheet-templates">
+        </div>
 </div>
 
-<div id="main" id="content-area">
-    <h1 id="view-title">Painel Principal - Bem-vinda, Cássia</h1>
-    <div id="editor-container" style="background: white; color: black; min-height: 500px; border-radius: 10px; padding: 20px;">
-        Selecione um documento ou crie um novo template.
+<div class="main-stage">
+    <div class="v8-card">
+        <div class="d-flex justify-content-between mb-3">
+            <h4 id="work-title">Editor de Texto de Elite</h4>
+            <span class="badge bg-success" id="status">Sincronizado</span>
+        </div>
+        <div id="editor-v8" contenteditable="true">Inicie sua redação profissional aqui...</div>
+        <div id="sheet-v8" style="display:none;"></div>
+        <button class="btn btn-save" onclick="saveToPanel()">SALVAR NO PAINEL V8</button>
     </div>
 </div>
 
 <script>
-    function loadDoc(id) {
-        document.getElementById('view-title').innerText = "Editando Documento #" + id;
-        document.getElementById('editor-container').innerHTML = "<div id='spreadsheet'></div>";
-        // Inicializa planilha de modelo
-        jspreadsheet(document.getElementById('spreadsheet'), {
-            data: [['Item', 'Valor', 'Status'], ['Template V8', 'R$ 0,00', 'Pendente']],
-            columns: [{ width: 300 }, { width: 100 }, { width: 100 }]
+    const templates = ["Fluxo de Caixa", "Controle de Prazos", "Gestão de Clientes", "Cálculo de Honorários", "Cronograma V8", "Orçamento Anual", "Auditoria de Dados", "Metas de Vendas", "Inventário", "Escala de Equipe", "Logística", "Database V8", "Relatório de Custos", "Tabela de Preços", "Dashboard de Performance", "Controle de Horas", "Checklist de Projetos", "Análise de Riscos", "Follow-up", "Arquivamento"];
+
+    const tempDiv = document.getElementById('sheet-templates');
+    templates.forEach((t, i) => {
+        tempDiv.innerHTML += `<a class="nav-link-v8" onclick="loadSheet('${t}')">📊 ${t}</a>`;
+    });
+
+    function switchMode(mode) {
+        document.getElementById('editor-v8').style.display = mode === 'text' ? 'block' : 'none';
+        document.getElementById('sheet-v8').style.display = mode === 'sheet' ? 'block' : 'none';
+    }
+
+    function loadSheet(name) {
+        switchMode('sheet');
+        document.getElementById('work-title').innerText = name;
+        document.getElementById('sheet-v8').innerHTML = ""; 
+        new Handsontable(document.getElementById('sheet-v8'), {
+            data: [['Item', 'Qtd', 'Valor', 'Total'], ['', '', '', '']],
+            rowHeaders: true, colHeaders: true, height: '400', licenseKey: 'non-commercial-and-evaluation'
         });
     }
 
-    function showFlashcards() {
-        document.getElementById('view-title').innerText = "Cards de Memorização (Método Ativo)";
-        document.getElementById('editor-container').innerHTML = `
-            <div class="flashcard">FRENTE: Qual o objetivo do V8?<br><br>(Clique para virar)</div>
-            <div class="flashcard">FRENTE: Regra de Ouro do Design<br><br>(Clique para virar)</div>
-        `;
+    function saveToPanel() {
+        const title = document.getElementById('work-title').innerText;
+        const list = document.getElementById('file-list');
+        list.innerHTML += `<a class="nav-link-v8">📁 ${title} (Salvo em ${new Date().toLocaleTimeString()})</a>`;
+        alert("Protocolo V8: Documento Arquivado com Sucesso!");
     }
 </script>
 </body>
